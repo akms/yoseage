@@ -37,7 +37,7 @@ func CheckTarget(dirPaths []string) {
 			log.Fatal(err)
 		}
 		gw, tw, file = MakeFile()
-		CompressionFile(tw, fileinfo, )
+		CompressionFile(tw, fileinfo, dirname)
 	}
 	defer file.Close()
 	defer gw.Close()
