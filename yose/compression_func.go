@@ -32,10 +32,10 @@ func CheckTarget(dirPaths []string) {
 	)
 	for _, dirpath := range dirPaths {
 		ChangeDir(dirpath)
-		_,dirname := filepath.Split(dirpath)
-		if fileinfo, err = ioutil.ReadDir(dirname); err != nil {
+		if fileinfo, err = ioutil.ReadDir(dirpath); err != nil {
 			log.Fatal(err)
 		}
+		_,dirname := filepath.Split(dirpath)
 		gw, tw, file = MakeFile()
 		CompressionFile(tw, fileinfo, dirname)
 	}
