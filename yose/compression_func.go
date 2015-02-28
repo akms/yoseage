@@ -60,11 +60,13 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 				log.Fatal(err)
 			}
 			//		err = filepath.Walk(file.Name(),walkFn)
-			ChangeDir(file.Name())
+			change_dirpath,_ := filepath.Abs(file.Name())
+			ChangeDir(change_dirpath)
 			dirname = filepath.Join(dirname,file.Name())
 			CompressionFile(tw, tmp_fileinfo, dirname)
 			dirname,_ = filepath.Split(dirname)
-			ChangeDir("../")
+			change_dirpath = filepath.Split(change_dirpath)
+			ChangeDir(change_dirpath)
 		} else {
 			tmpname := filepath.Join(dirname,file.Name())
 			//fmt.Println(filepath.Base(file.Name()))
