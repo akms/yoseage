@@ -56,19 +56,21 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 	)
 	for _, file := range fileinfo {
 		if file.IsDir() == true {
-			if tmp_fileinfo, err = ioutil.ReadDir(file.Name()); err != nil {
-				log.Fatal(err)
+			if file.Mode()&os.ModeSymlink != os.ModeSymlink {
+				if tmp_fileinfo, err = ioutil.ReadDir(file.Name()); err != nil {
+					log.Fatal(err)
+				}
+				//		err = filepath.Walk(file.Name(),walkFn)
+				change_dirpath,_ := filepath.Abs(file.Name())
+				fmt.Println(change_dirpath)
+				ChangeDir(change_dirpath)
+				dirname = filepath.Join(dirname,file.Name())
+				CompressionFile(tw, tmp_fileinfo, dirname)
+				dirname,_ = filepath.Split(dirname)
+				change_dirpath,_ = filepath.Split(change_dirpath)
+				fmt.Println(change_dirpath)
+				ChangeDir(change_dirpath)
 			}
-			//		err = filepath.Walk(file.Name(),walkFn)
-			change_dirpath,_ := filepath.Abs(file.Name())
-			fmt.Println(change_dirpath)
-			ChangeDir(change_dirpath)
-			dirname = filepath.Join(dirname,file.Name())
-			CompressionFile(tw, tmp_fileinfo, dirname)
-			dirname,_ = filepath.Split(dirname)
-			change_dirpath,_ = filepath.Split(change_dirpath)
-			fmt.Println(change_dirpath)
-			ChangeDir(change_dirpath)
 		} else {
 			tmpname := filepath.Join(dirname,file.Name())
 			//fmt.Println(filepath.Base(file.Name()))
