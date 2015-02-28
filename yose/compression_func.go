@@ -49,7 +49,7 @@ func CheckTarget(dirPaths []string) {
 	return nil
 }*/
 
-func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, string dirname) {
+func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 	var (
 		err          error
 		tmp_fileinfo []os.FileInfo
