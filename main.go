@@ -1,11 +1,10 @@
 package main
 
 import (
-	"os"
-	"yoseage/yose"
+	"github.com/akms/yoseage/yose"
 )
 
 func main() {
-	var dirPaths = []string{"/root/document"}
+	var dirPaths = []string{"/Users/akms/Documents"}
 	yose.CheckTarget(dirPaths)
 }

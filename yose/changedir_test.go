@@ -3,7 +3,6 @@ package yose
 import (
 	"testing"
 	"os"
-	."yoseage/yose"
 )
 
 func TestChangeDir(t *testing.T) {

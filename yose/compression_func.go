@@ -32,11 +32,12 @@ func CheckTarget(dirPaths []string) {
 	)
 	for _, dirpath := range dirPaths {
 		ChangeDir(dirpath)
-		if fileinfo, err = ioutil.ReadDir(dirpath); err != nil {
+		_,dirname := filepath.Split(dirpath)
+		if fileinfo, err = ioutil.ReadDir(dirname); err != nil {
 			log.Fatal(err)
 		}
 		gw, tw, file = MakeFile()
-		CompressionFile(tw, fileinfo)
+		CompressionFile(tw, fileinfo, )
 	}
 	defer file.Close()
 	defer gw.Close()
@@ -48,7 +49,7 @@ func CheckTarget(dirPaths []string) {
 	return nil
 }*/
 
-func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo) {
+func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, string dirname) {
 	var (
 		err          error
 		tmp_fileinfo []os.FileInfo
@@ -60,11 +61,13 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo) {
 			}
 			//		err = filepath.Walk(file.Name(),walkFn)
 			ChangeDir(file.Name())
-			CompressionFile(tw, tmp_fileinfo)
+			filepath.Join(dirname,file.Name())
+			CompressionFile(tw, tmp_fileinfo, dirname)
+			dirname,_ = filepath.Split(dirname)
 			ChangeDir("../")
 		} else {
-			tmpname, _ := filepath.Abs(file.Name())
-			fmt.Println(filepath.Base(file.Name()))
+			tmpname := filepath.Join(dirname,file.Name())
+			//fmt.Println(filepath.Base(file.Name()))
 			fmt.Println(tmpname)
 			body, _ := ioutil.ReadFile(tmpname)
 			if err = tw.WriteHeader(&tar.Header{Mode: int64(file.Mode()), Size: file.Size(), ModTime: file.ModTime(), Name: tmpname}); err != nil {
