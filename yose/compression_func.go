@@ -69,7 +69,7 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 			tmpname := filepath.Join(dirname,file.Name())
 			//fmt.Println(filepath.Base(file.Name()))
 			fmt.Println(tmpname)
-			body, _ := ioutil.ReadFile(file.name())
+			body, _ := ioutil.ReadFile(file.Name())
 			if err = tw.WriteHeader(&tar.Header{Mode: int64(file.Mode()), Size: file.Size(), ModTime: file.ModTime(), Name: tmpname}); err != nil {
 				log.Fatal(err)
 			}
