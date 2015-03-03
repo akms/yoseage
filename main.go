@@ -5,6 +5,6 @@ import (
 )
 
 func main () {
-	var dirPaths = []string{"/root/document"}
+	var dirPaths = []string{"/"}
 	yose.CheckTarget(dirPaths)
 }

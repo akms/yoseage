@@ -76,7 +76,6 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 				fmt.Println(tmpname)
 				body, _ := ioutil.ReadFile(file.Name())
 				if err = tw.WriteHeader(&tar.Header{Mode: int64(file.Mode()), Size: file.Size(), ModTime: file.ModTime(), Name: tmpname}); err != nil {
-					fmt.Println("hogehoge")
 					log.Fatal(err)
 				}
 				if _, err = tw.Write(body); err != nil {
@@ -85,17 +84,6 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 			}
 		}else{
 			fmt.Println(file.Name())
-			tmpname := filepath.Join(dirname,file.Name())
-			//fmt.Println(filepath.Base(file.Name()))
-			fmt.Println(tmpname)
-			body, _ := ioutil.ReadFile(file.Name())
-			if err = tw.WriteHeader(&tar.Header{Mode: int64(file.Mode()), Size: file.Size(), ModTime: file.ModTime(), Name: tmpname}); err != nil {
-				fmt.Println("hogehoge")
-				log.Fatal(err)
-			}
-			if _, err = tw.Write(body); err != nil {
-				log.Fatal(err)
-			}
 		}
 	}
 }
