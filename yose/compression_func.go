@@ -55,7 +55,7 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 		tmp_fileinfo []os.FileInfo
 	)
 	for _, file := range fileinfo {
-		if file.Mode()&os.ModeSymlink != os.ModeSymlink || file.Mode()&os.ModeCharDevice != os.ModeCharDevice {
+		if file.Mode()&os.ModeSymlink != os.ModeSymlink {
 			if file.IsDir() == true {
 				if tmp_fileinfo, err = ioutil.ReadDir(file.Name()); err != nil {
 					log.Fatal(err)
