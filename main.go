@@ -5,6 +5,6 @@ import (
 )
 
 func main () {
-	var dirPaths = []string{"/"}
+	var dirPaths = []string{"/sbin"}
 	yose.CheckTarget(dirPaths)
 }
