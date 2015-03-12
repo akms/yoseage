@@ -82,16 +82,15 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 			fmt.Println(change_dirpath)
 			ChangeDir(change_dirpath)
 		} else {
-			if infile.Mode()&os.ModeSymlink != os.ModeSymlink {
+			if infile.Mode()&os.ModeSymlink == os.ModeSymlink {
 				tmpname := filepath.Join(dirname, infile.Name())
 				evalsym, _ := os.Readlink(infile.Name())
 				linkname, _ := filepath.Abs(evalsym)
 				fmt.Println(linkname)
-				body, _ := ioutil.ReadFile(infile.Name())
-				if err = tw.WriteHeader(&tar.Header{Mode: int64(infile.Mode()), Size: infile.Size(), ModTime: infile.ModTime(), Name: tmpname, Linkname: linkname}); err != nil {
-					log.Fatal(err)
-				}
-				if _, err = tw.Write(body); err != nil {
+				hdr,_ := tar.FileInfoHeader(infile, evalsym)
+				hdr.Typeflag = tar.TypeSymlink
+				hdr.Name = tmpname
+				if err = tw.WriteHeader(hdr); err != nil {
 					log.Fatal(err)
 				}
 			} else {
