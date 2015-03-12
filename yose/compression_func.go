@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 var (
@@ -33,20 +35,34 @@ func MakeFile() (*gzip.Writer, *tar.Writer, *os.File) {
 	return gw, tw, file
 }
 
-func CheckTarget(dirPaths []string) {
-	var (
-		fileinfo []os.FileInfo
-		err      error
-	)
-	for _, dirpath := range dirPaths {
-		ChangeDir(dirpath)
-		if fileinfo, err = ioutil.ReadDir(dirpath); err != nil {
-			log.Fatal(err)
+func MatchTarget(name string) bool {
+	str := strings.Fields(`^lost\+found$ ^proc$ ^sys$ ^dev$ ^mnt$ ^var$ ^run$`)
+	for _, s := range str {
+		dirRegexp := regexp.MustCompile(s)
+		if dirRegexp.MatchString(name) {
+			return false
 		}
-		_, dirname := filepath.Split(dirpath)
-		gw, tw, file = MakeFile()
-		CompressionFile(tw, fileinfo, dirname)
 	}
+	return true
+}
+
+func CheckTarget(dirpath string) {
+	var (
+		tmpfileinfo, fileinfo []os.FileInfo
+		err                   error
+	)
+	ChangeDir(dirpath)
+	if tmpfileinfo, err = ioutil.ReadDir(dirpath); err != nil {
+		log.Fatal(err)
+	}
+	for _, info := range tmpfileinfo {
+		if MatchTarget(info.Name()) {
+			fileinfo = append(fileinfo, info)
+		}
+	}
+	_, dirname := filepath.Split(dirpath)
+	gw, tw, file = MakeFile()
+	CompressionFile(tw, fileinfo, dirname)
 	defer file.Close()
 	defer gw.Close()
 	defer tw.Close()
@@ -64,7 +80,6 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 		change_dirpath string
 	)
 	for _, infile := range fileinfo {
-
 		if infile.IsDir() == true {
 			if tmp_fileinfo, err = ioutil.ReadDir(infile.Name()); err != nil {
 				log.Fatal(err)
@@ -79,15 +94,13 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 			CompressionFile(tw, tmp_fileinfo, dirname)
 			dirname, _ = filepath.Split(dirname)
 			change_dirpath, _ = filepath.Split(change_dirpath)
-			fmt.Println(change_dirpath)
+			//fmt.Println(change_dirpath)
 			ChangeDir(change_dirpath)
 		} else {
 			if infile.Mode()&os.ModeSymlink == os.ModeSymlink {
 				tmpname := filepath.Join(dirname, infile.Name())
 				evalsym, _ := os.Readlink(infile.Name())
-				linkname, _ := filepath.Abs(evalsym)
-				fmt.Println(linkname)
-				hdr,_ := tar.FileInfoHeader(infile, evalsym)
+				hdr, _ := tar.FileInfoHeader(infile, evalsym)
 				hdr.Typeflag = tar.TypeSymlink
 				hdr.Name = tmpname
 				if err = tw.WriteHeader(hdr); err != nil {
@@ -104,7 +117,6 @@ func CompressionFile(tw *tar.Writer, fileinfo []os.FileInfo, dirname string) {
 					log.Fatal(err)
 				}
 			}
-
 		}
 	}
 }
