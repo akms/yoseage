@@ -5,6 +5,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"os"
+	"strings"
 )
 
 func TestMakeFile(t *testing.T) {
@@ -23,4 +24,18 @@ func TestMakeFile(t *testing.T) {
 	if file == nil {
 		t.Errorf("make faild file")
 	}
+}
+
+func TestMatchTarget(t *testing.T) {
+	str := strings.Fields(`^lost\+found$ ^proc$ ^sys$ ^dev$ ^mnt$ ^var$ ^run$`)
+	for _, s := range str {
+		if !MatchTarget(s) {
+			t.Errorf("Match faild %s",s)
+		}
+	}
+}
+
+
+func TestCheckTarget(t *testing.T) {
+	
 }
