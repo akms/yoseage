@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	gw   *gzip.Writer
-	tw   *tar.Writer
-	file *os.File
+	gw                              *gzip.Writer
+	tw                              *tar.Writer
+	file                            *os.File
+	default_targets, option_targets []string
 )
 
 func MakeFile() (*gzip.Writer, *tar.Writer, *os.File) {
@@ -44,15 +45,28 @@ func MakeFile() (*gzip.Writer, *tar.Writer, *os.File) {
 	return gw, tw, file
 }
 
-func MatchTarget(name string) bool {
-	str := strings.Fields(`^lost\+found$ ^proc$ ^sys$ ^dev$ ^mnt$ ^var$ ^run$`)
-	for _, s := range str {
-		dirRegexp := regexp.MustCompile(s)
-		if dirRegexp.MatchString(name) {
+func MatchDefaultTarget(name string) bool {
+	for i, s := range default_targets {
+		default_Regexp := regexp.MustCompile(s)
+		if default_Regexp.MatchString(name) {
+			default_targets = append(default_targets[:i], default_targets[i+1:]...)
 			return false
 		}
 	}
 	return true
+}
+
+func MatchOptionTarget(name string) bool {
+	for _, s := range option_targets {
+		option_Regexp := regexp.MustCompile(s)
+		if option_Regexp.MatchString(name) {
+			//option_targets = append(option_targets[:i], option_targets[i+1:]...)
+			fmt.Println(name)
+			fmt.Println(option_targets)
+			return true
+		}
+	}
+	return false
 }
 
 func CheckTarget(dirpath string) {
@@ -60,12 +74,14 @@ func CheckTarget(dirpath string) {
 		beforecheck_fileinfo, checked_fileinfo []os.FileInfo
 		err                                    error
 	)
+	default_targets = strings.Fields(`^lost\+found$ ^proc$ ^sys$ ^dev$ ^mnt$ ^media$ ^run$ ^selinux$`)
+	option_targets = ReadOption()
 	ChangeDir(dirpath)
 	if beforecheck_fileinfo, err = ioutil.ReadDir(dirpath); err != nil {
 		log.Fatal(err)
 	}
 	for _, info := range beforecheck_fileinfo {
-		if MatchTarget(info.Name()) {
+		if MatchDefaultTarget(info.Name()) {
 			checked_fileinfo = append(checked_fileinfo, info)
 		}
 	}
@@ -91,8 +107,13 @@ func CompressionFile(tw *tar.Writer, checked_fileinfo []os.FileInfo, dirname str
 		tmp_fileinfo   []os.FileInfo
 		change_dirpath string
 	)
+compress:
 	for _, infile := range checked_fileinfo {
 		if infile.IsDir() {
+			target_name := filepath.Join(dirname, infile.Name())
+			if MatchOptionTarget(target_name) {
+				continue compress
+			}
 			if tmp_fileinfo, err = ioutil.ReadDir(infile.Name()); err != nil {
 				log.Fatal(err)
 			}
@@ -105,6 +126,9 @@ func CompressionFile(tw *tar.Writer, checked_fileinfo []os.FileInfo, dirname str
 			ChangeDir(change_dirpath)
 		} else {
 			tmpname := filepath.Join(dirname, infile.Name())
+			if MatchOptionTarget(tmpname) {
+				continue compress
+			}
 			if infile.Mode()&os.ModeSymlink == os.ModeSymlink {
 				evalsym, _ := os.Readlink(infile.Name())
 				hdr, _ := tar.FileInfoHeader(infile, evalsym)
@@ -114,7 +138,7 @@ func CompressionFile(tw *tar.Writer, checked_fileinfo []os.FileInfo, dirname str
 					log.Fatal(err)
 				}
 			} else {
-				fmt.Println(tmpname)
+				//fmt.Println(tmpname)
 				body, _ := ioutil.ReadFile(infile.Name())
 				hdr, _ := tar.FileInfoHeader(infile, "")
 				hdr.Typeflag = tar.TypeRegA

@@ -26,7 +26,7 @@ func TestMakeFile(t *testing.T) {
 	}
 }
 
-func TestMatchTarget(t *testing.T) {
+func TestMatchDefaultTarget(t *testing.T) {
 	str := strings.Fields(`^lost\+found$ ^proc$ ^sys$ ^dev$ ^mnt$ ^var$ ^run$`)
 	for _, s := range str {
 		if !MatchTarget(s) {
